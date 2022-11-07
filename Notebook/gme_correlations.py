@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import scipy.signal as sps
 from sklearn.preprocessing import MinMaxScaler
 
-gme_2y = pd.read_csv('/Users/nickeisenberg/GitRepos/Python_Misc/MinimalWorkingExamples/DataSets/gme_11_3_22.csv')
+gme_2y = pd.read_csv('/Users/nickeisenberg/GitRepos/Pynance/DataSets/gme_11_3_22.csv')
 cols = gme_2y.columns
 gme_2y.rename(columns={cols[0] : 'Date'}, inplace=True)
 dates = gme_2y['Date'].values
@@ -76,7 +76,6 @@ top_scores = np.array(top_scores)
 
 print(top_scores)
 
-exit()
 for i in range(8):
     ind = int(top_scores[i][0])
     corr_past = gme_2y[ind : ind + pat_len]
