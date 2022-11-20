@@ -4,7 +4,7 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from compiler import *
+# from compiler import *
 
 #-yf.Ticker.history--------------------------------
 # period : 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max
@@ -34,11 +34,16 @@ from compiler import *
 #--------------------------------------------------
 gme = yf.Ticker('GME')
 
-gme_df = gme.history(period='5d',
-                     interval='5m',
+gme_df = gme.history(period='2y',
+                     interval='1h',
                      prepost=False,
                      actions=False)
 
+gme_open = gme_df['Open'].values
+plt.plot(gme_open)
+plt.show()
+
+exit()
 gme_open = gme_df['Open'].values.reshape((-1,1))
 Mm = MinMaxScaler(feature_range=(0,1))
 gme_open_scaled = Mm.fit_transform(gme_open)
