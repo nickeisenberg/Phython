@@ -60,6 +60,7 @@ def first_level_replies(comment):
 
 if __name__ == '__main__':
 
+
     reddit_read_only = praw.Reddit(client_id=client_id,
                                    client_secret=client_secret,
                                    user_agent=user_agent)
@@ -75,17 +76,23 @@ if __name__ == '__main__':
 
     sub_comment_list = submission_to_comments_list(submission=sub,
                                                    no_of_comments=5)
+    
+    path = '/Users/nickeisenberg/GitRepos/Phython/Notebook/Func_Outputs/'
+    name = 'comments_replies.txt'
+    p_n = path + name
 
     count_c = 1
-    for comment in sub_comment_list:
-        print('--------------------')
-        print(f'processing comment: {count_c} / {len(sub_comment_list)}')
-        print('--------------------')
-        print(f'{comment.body}\n')
-        replies = first_level_replies(comment)
-        count_r = 1
-        for reply in replies:
-            print(f'Reply: {count_r} / {len(replies)}')
-            print(f'{reply.body}\n')
-            count_r += 1
-        count_c += 1
+    with open(p_n, 'w') as f:
+        for comment in sub_comment_list:
+            print('--------------------')
+            print(f'processing comment: {count_c} / {len(sub_comment_list)}')
+            print('--------------------')
+            f.write(f'Comment_{count_c}\n')
+            f.write(f'{comment.body}\n')
+            replies = first_level_replies(comment)
+            count_r = 1
+            for reply in replies:
+                f.write(f'Reply_{count_r}\n')
+                f.write(f'{reply.body}\n')
+                count_r += 1
+            count_c += 1

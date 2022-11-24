@@ -3,6 +3,7 @@ np.set_printoptions(suppress=True)
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import yfinance as yf
+import praw
 
 # need to remove the gmt offset that comes with yfinance date/time outputs
 class Volitility:
@@ -27,7 +28,7 @@ class Volitility:
         else:
             data = yf.Ticker(ticker).history(period=period,
                                              interval=interval,
-                                             prepost=prepost,
+                                             # prepost=prepost,
                                              actions=False)
 
         if isinstance(s_date, str):
@@ -141,7 +142,128 @@ class Correlation:
 
         return top_scores
 
+
+class Reddit:
+
+
+    def __init__(self, client_id, client_secret, user_agent, subreddit_name):
+
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.user_agent = user_agent
+        self.subreddit_name = subreddit_name
+        self.subreddit = praw.Reddit(client_id=self.client_id,
+                                     client_secret=self.client_secret,
+                                     user_agent=self.user_agent).subreddit(
+                                         self.subreddit_name)
+
+
+    # type(subreddit) = praw.models.reddit.subreddit.Subreddit
+    # sort_by: 'hot', 'new', 'top', 'rising'
+    # If search != None and type(search) = str then that will override sort_by
+    def submission_getter(
+        self,
+        sort_by='top',
+        search=None,
+        search_sort_by='relevance',
+        no_of_submissions=10):
+
+        print('starting submission getter')
+
+        if isinstance(search, str):
+            submissions = self.subreddit.search(search, sort=search_sort_by)
+
+        elif sort_by == 'top':
+            submissions = self.subreddit.top(limit=no_of_submissions)
+        elif sort_by == 'hot':
+            submissions = self.subreddit.hot(limit=no_of_submissions)
+        elif sort_by == 'new':
+            submissions = self.subreddit.new(limit=no_of_submissions)
+        elif sort_by == 'rising':
+            submissions = self.subreddit.rising(limit=no_of_submissions)
+
+        submission_list = []
+        count = 1
+        for sub in submissions:
+            submission_list.append(sub)
+            if count == no_of_submissions:
+                break
+            count += 1
+
+        self.submission_list = submission_list
+
+        return submission_list
+
+
+    def submissions_to_comments_dic(self, no_of_comments=10):
+
+        print('starting submissions to comments dic')
+
+        submission_comments = {submission : [] for submission in
+                              self.submission_list}
+        
+        for submission in submission_comments.keys():
+            submission_comments[submission] = submission.comments[: no_of_comments]
+
+        self.submission_comments = submission_comments
+
+        return submission_comments
+
+
+    def comment_replies(self, no_of_replies=10):
+
+        print('starting comments replies')
+
+        submissions_comments_replies = {subs : {} for subs in
+                                        self.submission_list}
+
+        for subs in self.submission_list:
+            comments_replies = {coms : [] for coms in
+                               self.submission_comments[subs]}
+            count_c = 1
+            for coms in self.submission_comments[subs]:
+                print(f'COMMENT {count_c}')
+                replies = coms.replies
+                replies.replace_more(limit=None)
+                replies = replies[: no_of_replies]
+                for reply in  replies:
+                    comments_replies[coms].append(reply)
+                count_c += 1
+
+            submissions_comments_replies[subs] = comments_replies
+
+        self.submissions_comments_replies = submissions_comments_replies
+
+        return submissions_comments_replies
+
+
 if __name__ == '__main__':
+
+
+    wsb = Reddit(client_id=client_id,
+                 client_secret=client_secret,
+                 user_agent=user_agent,
+                 subreddit_name='wallstreetbets')
+
+    wsb.submission_getter(search='Discussion', no_of_submissions=1)
+    wsb.submissions_to_comments_dic(no_of_comments=3)
+    subs_coms_reps = wsb.comment_replies()
+
+    for subs in subs_coms_reps.keys():
+        print('--------------------')
+        print(f'subs.title\n')
+        print('--------------------\n')
+        for coms in subs_coms_reps[subs].keys():
+            print(f'Comment:\n{coms.body}\n')
+            for reps in subs_coms_reps[subs][coms]:
+                print(f'Reply:\n{reps.body}')
+
+
+
+
+                 
+
+    exit()
 
     print('-----Testing-----')
     data_path='/Users/nickeisenberg/GitRepos/Python_Misc/Notebook/DataSets/gme_11_3_22.csv'

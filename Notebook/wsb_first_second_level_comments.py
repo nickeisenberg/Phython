@@ -2,6 +2,9 @@ import praw
 from datetime import datetime
 from sys import exit 
 
+client_id='JkwBK3M4E5CfK11a8oKkcw'
+client_secret='llrNKLscK7Wcu8Fg28uoNsw5-I2LMw'
+user_agent='psssat'
 
 reddit_read_only = praw.Reddit(client_id=client_id,
                                client_secret=client_secret,
