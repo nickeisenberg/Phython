@@ -60,7 +60,6 @@ def first_level_replies(comment):
 
 if __name__ == '__main__':
 
-
     reddit_read_only = praw.Reddit(client_id=client_id,
                                    client_secret=client_secret,
                                    user_agent=user_agent)
