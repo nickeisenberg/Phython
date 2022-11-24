@@ -2,14 +2,15 @@ import praw
 from datetime import datetime
 from sys import exit 
 
+
 reddit_read_only = praw.Reddit(client_id=client_id,
                                client_secret=client_secret,
                                user_agent=user_agent)
 
 subreddit = reddit_read_only.subreddit('wallstreetbets')
 print(subreddit.display_name)
+print(type(subreddit))
 print('--------------------------------------------------')
-
 # get the first 5 submissions
 submissions = subreddit.search('Discussion')
 
@@ -34,8 +35,6 @@ for tc in top_comments:
     count += 1
 
 # get all first level replies to the top comments
-replies_tc = tc.replies
-
 reply_dic = {}
 count = 1
 total = len(tc_dic.keys())
@@ -56,6 +55,7 @@ for i in range(1, 6):
     replies = reply_dic[f'tc_{i}_replies']
     print(f'----------Comment-{i}----------:\n')
     print(f'{tc.body}\n')
+    print(f'{type(tc.body)}\n')
     print(f'-----Replies-to-comment-{i}-----:\n')
     for k, r in enumerate(replies):
         print(f'---Reply-{k+1}---:\n')
