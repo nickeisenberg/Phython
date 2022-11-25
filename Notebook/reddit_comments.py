@@ -59,13 +59,22 @@ def first_level_replies(comment):
 
 
 if __name__ == '__main__':
+    
 
     reddit_read_only = praw.Reddit(client_id=client_id,
                                    client_secret=client_secret,
                                    user_agent=user_agent)
     
     subreddit_name = 'wallstreetbets'
-    subreddit = reddit_read_only.subreddit(subreddit_name)
+    subreddit = reddit_read_only.subreddit(subreddit_name) 
+    
+    count = 1
+    for sub in subreddit.search('Discussion'):
+        count += 1
+        if count == 200:
+            break
+    print(count)
+    exit()
 
     wsb_top_submission = submission_getter(subreddit=subreddit,
                                            search='Discussion',
@@ -73,11 +82,13 @@ if __name__ == '__main__':
 
     sub = wsb_top_submission[0]
 
+    print(sub.title)
+
     sub_comment_list = submission_to_comments_list(submission=sub,
-                                                   no_of_comments=5)
+                                                   no_of_comments=3)
     
     path = '/Users/nickeisenberg/GitRepos/Phython/Notebook/Func_Outputs/'
-    name = 'comments_replies.txt'
+    name = 'comments_replies2.txt'
     p_n = path + name
 
     count_c = 1
