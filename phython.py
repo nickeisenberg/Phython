@@ -1,9 +1,12 @@
 import numpy as np
-np.set_printoptions(suppress=True)
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 import yfinance as yf
 import praw
+
+# turn off scientific notation
+np.set_printoptions(suppress=True)
+
 
 # need to remove the gmt offset that comes with yfinance date/time outputs
 class Volitility:
@@ -13,7 +16,12 @@ class Volitility:
         self.data_path = data_path
         self.data = data
 
-    def historical(self, method=None, s_date=0, e_date=-1, period=None, interval=None):
+    def historical(self,
+                   method=None,
+                   s_date=0,
+                   e_date=-1,
+                   period=None,
+                   interval=None):
 
         data = self.data
         data_path = self.data_path
@@ -36,7 +44,7 @@ class Volitility:
         if isinstance(e_date, str):
             e_date = data.index[data['Date'] == e_date].values[0]
 
-        data = data.iloc[s_date : e_date]
+        data = data.iloc[s_date: e_date]
 
         if method == 'open':
             open_p = data['Open'].values
@@ -61,16 +69,29 @@ class Volitility:
 
     def implied(self):
 
-        # find a way to get options data and black-scholes formula 
+        # find a way to get options data and black-scholes formula
         return None
+
 
 def pearson_corr(x, y):
     ux, uy = np.mean(x), np.mean(y)
     x_cen, y_cen = x - ux, y - uy
-    return np.dot(x_cen, y_cen) / (np.sqrt(np.sum(np.square(x_cen))) * np.sqrt(np.sum(    np.square(y_cen))))
+
+    pear_corr = (np.dot(x_cen, y_cen) /
+                 (np.sqrt(np.sum(np.square(x_cen))) *
+                  np.sqrt(np.sum(np.square(y_cen)))))
+
+    return pear_corr
+
 
 def norm_dot(x, y):
-    return np.dot(x, y) / (np.sqrt(np.sum(np.square(x))) * np.sqrt(np.sum(np.square(y))))
+
+    n_dot = (np.dot(x, y) *
+             (np.sqrt(np.sum(np.square(x))) *
+              np.sqrt(np.sum(np.square(y)))))
+
+    return n_dot
+
 
 class Correlation:
 
@@ -99,21 +120,21 @@ class Correlation:
                                              prepost=prepost,
                                              actions=False)
 
-        data = data[OHLC].values.reshape((-1,1))
+        data = data[OHLC].values.reshape((-1, 1))
 
         if standardize:
-            Mm = MinMaxScaler(feature_range=(0,1))
+            Mm = MinMaxScaler(feature_range=(0, 1))
             data_scaled = Mm.fit_transform(data)
 
         if isinstance(pat_start, int) and isinstance(pat_end, int):
-            pat = data[pat_start : pat_end]
-            pat_s = data_scaled[pat_start : pat_end]
+            pat = data[pat_start: pat_end]
+            pat_s = data_scaled[pat_start: pat_end]
             pat_len = len(pat)
             pat_ind = [pat_start, pat_end]
 
         corr_scores = []
         for i in range(0, pat_ind[0] + 1):
-            ref_s = data_scaled[i : i + pat_len]
+            ref_s = data_scaled[i: i + pat_len]
             p_score_s = pearson_corr(pat_s.reshape(-1), ref_s.reshape(-1))
             corr_scores.append([i, p_score_s])
         corr_scores = np.array(corr_scores)
@@ -127,13 +148,15 @@ class Correlation:
                 continue
 
             if len(top_scores) == 0:
-                top_scores = np.append(top_scores, [ref_ind, corr_scores[i][1]])
-                top_scores = top_scores.reshape((1,2))
+                top_scores = np.append(top_scores,
+                                       [ref_ind, corr_scores[i][1]])
+                top_scores = top_scores.reshape((1, 2))
                 continue
 
             dist_i = np.min(np.abs(top_scores[:, 0] - ref_ind))
             if dist_i >= pat_len / 5:
-                top_scores = np.vstack((top_scores, [ref_ind, corr_scores[i][1]]))
+                top_scores = np.vstack((top_scores,
+                                        [ref_ind, corr_scores[i][1]]))
 
             if len(top_scores) == 9:
                 break
@@ -145,8 +168,11 @@ class Correlation:
 
 class Reddit:
 
-
-    def __init__(self, client_id, client_secret, user_agent, subreddit_name):
+    def __init__(self,
+                 client_id=None,
+                 client_secret=None,
+                 user_agent=None,
+                 subreddit_name=None):
 
         self.client_id = client_id
         self.client_secret = client_secret
@@ -157,30 +183,29 @@ class Reddit:
                                      user_agent=self.user_agent).subreddit(
                                          self.subreddit_name)
 
-
     # type(subreddit) = praw.models.reddit.subreddit.Subreddit
     # sort_by: 'hot', 'new', 'top', 'rising'
     # If search != None and type(search) = str then that will override sort_by
-    def submission_getter(
-        self,
-        sort_by='top',
-        search=None,
-        search_sort_by='relevance',
-        no_of_submissions=10):
+    def submission_getter(self,
+                          subreddit=None,
+                          sort_by='top',
+                          search=None,
+                          search_sort_by='relevance',
+                          no_of_submissions=10):
 
         print('starting submission getter')
 
         if isinstance(search, str):
-            submissions = self.subreddit.search(search, sort=search_sort_by)
+            submissions = subreddit.search(search, sort=search_sort_by)
 
         elif sort_by == 'top':
-            submissions = self.subreddit.top(limit=no_of_submissions)
+            submissions = subreddit.top(limit=no_of_submissions)
         elif sort_by == 'hot':
-            submissions = self.subreddit.hot(limit=no_of_submissions)
+            submissions = subreddit.hot(limit=no_of_submissions)
         elif sort_by == 'new':
-            submissions = self.subreddit.new(limit=no_of_submissions)
+            submissions = subreddit.new(limit=no_of_submissions)
         elif sort_by == 'rising':
-            submissions = self.subreddit.rising(limit=no_of_submissions)
+            submissions = subreddit.rising(limit=no_of_submissions)
 
         submission_list = []
         count = 1
@@ -190,102 +215,77 @@ class Reddit:
                 break
             count += 1
 
-        self.submission_list = submission_list
+        # self.submission_list = submission_list
 
         return submission_list
 
-
-    def submissions_to_comments_dic(self, no_of_comments=10):
+    def submissions_to_comments_dic(self,
+                                    submission_list=None,
+                                    no_of_comments=10):
 
         print('starting submissions to comments dic')
 
-        submission_comments = {submission : [] for submission in
-                              self.submission_list}
-        
-        for submission in submission_comments.keys():
-            submission_comments[submission] = submission.comments[: no_of_comments]
+        submission_coms = {submission: [] for submission in submission_list}
 
-        self.submission_comments = submission_comments
+        for submission in submission_coms.keys():
+            print(submission.title)
+            submission_coms[submission] = submission.comments[: no_of_comments]
 
-        return submission_comments
+        # self.submission_comments = submission_comments
 
+        return submission_coms
 
-    def comment_replies(self, no_of_replies=10):
+    def comment_replies(self,
+                        submission_list=None,
+                        submission_comments=None,
+                        no_of_replies=10):
 
         print('starting comments replies')
 
-        submissions_comments_replies = {subs : {} for subs in
-                                        self.submission_list}
+        submissions_comments_replies = {sub: {} for sub in submission_list}
 
-        for subs in self.submission_list:
-            comments_replies = {coms : [] for coms in
-                               self.submission_comments[subs]}
+        for sub in submission_list:
+            comments_replies = {com: [] for com in submission_comments[sub]}
             count_c = 1
-            for coms in self.submission_comments[subs]:
+            for com in submission_comments[sub]:
                 print(f'COMMENT {count_c}')
-                replies = coms.replies
+                replies = com.replies
                 replies.replace_more(limit=None)
                 replies = replies[: no_of_replies]
-                for reply in  replies:
-                    comments_replies[coms].append(reply)
+                for reply in replies:
+                    comments_replies[com].append(reply)
                 count_c += 1
 
-            submissions_comments_replies[subs] = comments_replies
+            submissions_comments_replies[sub] = comments_replies
 
-        self.submissions_comments_replies = submissions_comments_replies
+        # self.submissions_comments_replies = submissions_comments_replies
 
         return submissions_comments_replies
 
 
 if __name__ == '__main__':
 
-
     wsb = Reddit(client_id=client_id,
                  client_secret=client_secret,
                  user_agent=user_agent,
                  subreddit_name='wallstreetbets')
 
-    wsb.submission_getter(search='Discussion', no_of_submissions=1)
-    wsb.submissions_to_comments_dic(no_of_comments=3)
-    subs_coms_reps = wsb.comment_replies()
+    submissions = wsb.submission_getter(subreddit=wsb.subreddit,
+                                        search='Discussion',
+                                        no_of_submissions=1)
 
-    for subs in subs_coms_reps.keys():
+    comments = wsb.submissions_to_comments_dic(submission_list=submissions,
+                                               no_of_comments=3)
+
+    subs_coms_reps = wsb.comment_replies(submission_list=submissions,
+                                         submission_comments=comments,
+                                         no_of_replies=10)
+
+    for sub in subs_coms_reps.keys():
         print('--------------------')
-        print(f'subs.title\n')
+        print(f'{sub.title}\n')
         print('--------------------\n')
-        for coms in subs_coms_reps[subs].keys():
-            print(f'Comment:\n{coms.body}\n')
-            for reps in subs_coms_reps[subs][coms]:
-                print(f'Reply:\n{reps.body}')
-
-
-
-
-                 
-
-    exit()
-
-    print('-----Testing-----')
-    data_path='/Users/nickeisenberg/GitRepos/Python_Misc/Notebook/DataSets/gme_11_3_22.csv'
-    df = pd.read_csv(data_path)
-    df.rename(columns={df.columns[0] : 'Date'}, inplace=True)
-
-    dfhead = df.iloc[:10]
-
-    e_date ='2020-11-05 09:30:00-05:00'
-    gme_vol = Volitility(data=df)
-    gme_vol_open = gme_vol.historical(e_date=e_date, method='open')
-
-    gme_vol_head = Volitility(data=dfhead)
-    gme_vol__head_open = gme_vol_head.historical(method='open')
-
-    print(gme_vol.volitility)
-    print(gme_vol.mean_return)
-    print(gme_vol.dt)
-    print('----------------')
-    print(gme_vol_head.volitility)
-    print(gme_vol_head.mean_return)
-    print(gme_vol_head.dt)
-
-
-
+        for com in subs_coms_reps[sub].keys():
+            print(f'Comment:\n{com.body}\n')
+            for rep in subs_coms_reps[sub][com]:
+                print(f'Reply:\n{rep.body}')
