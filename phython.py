@@ -166,28 +166,27 @@ class Correlation:
         return top_scores
 
 
-class Reddit:
+class reddit_phy:
 
-    def __init__(self,
-                 client_id=None,
-                 client_secret=None,
-                 user_agent=None,
-                 subreddit_name=None):
+    # def __init__(self,
+    #              client_id=None,
+    #              client_secret=None,
+    #              user_agent=None,
+    #              subreddit_name=None):
 
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.user_agent = user_agent
-        self.subreddit_name = subreddit_name
-        self.subreddit = praw.Reddit(client_id=self.client_id,
-                                     client_secret=self.client_secret,
-                                     user_agent=self.user_agent).subreddit(
-                                         self.subreddit_name)
+    #     self.client_id = client_id
+    #     self.client_secret = client_secret
+    #     self.user_agent = user_agent
+    #     self.subreddit_name = subreddit_name
+    #     self.subreddit = praw.Reddit(client_id=self.client_id,
+    #                                  client_secret=self.client_secret,
+    #                                  user_agent=self.user_agent).subreddit(
+    #                                      self.subreddit_name)
 
     # type(subreddit) = praw.models.reddit.subreddit.Subreddit
     # sort_by: 'hot', 'new', 'top', 'rising'
     # If search != None and type(search) = str then that will override sort_by
-    def submission_getter(self,
-                          subreddit=None,
+    def submission_getter(subreddit=None,
                           sort_by='top',
                           search=None,
                           search_sort_by='relevance',
@@ -219,9 +218,8 @@ class Reddit:
 
         return submission_list
 
-    def submissions_to_comments_dic(self,
-                                    submission_list=None,
-                                    no_of_comments=10):
+    def comment_getter(submission_list=None,
+                       no_of_comments=10):
 
         print('starting submissions to comments dic')
 
@@ -235,8 +233,7 @@ class Reddit:
 
         return submission_coms
 
-    def comment_replies(self,
-                        submission_list=None,
+    def comment_replies(submission_list=None,
                         submission_comments=None,
                         no_of_replies=10):
 
@@ -265,21 +262,25 @@ class Reddit:
 
 if __name__ == '__main__':
 
-    wsb = Reddit(client_id=client_id,
-                 client_secret=client_secret,
-                 user_agent=user_agent,
-                 subreddit_name='wallstreetbets')
+    client_id = 'JkwBK3M4E5CfK11a8oKkcw'                                              
+    client_secret = 'llrNKLscK7Wcu8Fg28uoNsw5-I2LMw'
+    user_agent = 'psssat'
 
-    submissions = wsb.submission_getter(subreddit=wsb.subreddit,
-                                        search='Discussion',
-                                        no_of_submissions=1)
+    wsb = praw.Reddit(client_id=client_id,
+                      client_secret=client_secret,
+                      user_agent=user_agent).subreddit(
+                          'wallstreetbets')
 
-    comments = wsb.submissions_to_comments_dic(submission_list=submissions,
-                                               no_of_comments=3)
+    submissions = reddit_phy.submission_getter(subreddit=wsb,
+                                               search='Discussion',
+                                               no_of_submissions=1)
 
-    subs_coms_reps = wsb.comment_replies(submission_list=submissions,
-                                         submission_comments=comments,
-                                         no_of_replies=10)
+    comments = reddit_phy.comment_getter(submission_list=submissions,
+                                         no_of_comments=3)
+
+    subs_coms_reps = reddit_phy.comment_replies(submission_list=submissions,
+                                                submission_comments=comments,
+                                                no_of_replies=10)
 
     for sub in subs_coms_reps.keys():
         print('--------------------')
