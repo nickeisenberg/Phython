@@ -29,3 +29,13 @@ for sub in subs_coms_reps.keys():
         for rep in subs_coms_reps[sub][com]:
             print(rep.body)
 
+
+sub = [*subs_coms_reps.keys()][0]
+
+coms = subs_coms_reps[sub].keys()
+print(coms)
+
+reps = subs_coms_reps[sub][coms[0]]
+
+print(reps[0].body)
+
