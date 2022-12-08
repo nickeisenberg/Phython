@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import scipy.signal as sps
 from sklearn.preprocessing import MinMaxScaler
 
-gme_2y = pd.read_csv('/Users/nickeisenberg/GitRepos/Pynance/DataSets/gme_11_3_22.csv')
+gme_2y = pd.read_csv('/Users/nickeisenberg/GitRepos/Phython/DataSets/gme_11_3_22.csv')
 cols = gme_2y.columns
 gme_2y.rename(columns={cols[0] : 'Date'}, inplace=True)
 dates = gme_2y['Date'].values
