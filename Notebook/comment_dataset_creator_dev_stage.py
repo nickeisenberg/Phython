@@ -86,6 +86,7 @@ for sub in subs_coms_reps.keys():
 
 # historical stock data
 # create a meme index
+# need to min/max scale each meme
 memes = ['GME']
 memes_history = []
 for meme in memes:
