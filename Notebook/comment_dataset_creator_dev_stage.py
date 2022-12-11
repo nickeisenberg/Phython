@@ -60,7 +60,7 @@ for d in dates[-10:]:
     print(d)
 
 # store comments and replies
-path = '/Users/nickeisenberg/GitRepos/Phython/Notebook/Func_Outputs/gme_comments_replies'
+path = '/Users/nickeisenberg/GitRepos/Phython/Notebook/Func_Outputs/comments_replies'
 for sub in subs_coms_reps.keys():
     date = [sub.title.split()[6: 7][0][: 4],
             months[sub.title.split()[4: 5][0]],
