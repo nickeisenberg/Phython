@@ -3,9 +3,13 @@ import pandas as pda
 from sys import exit
 from datetime import datetime
 
-reddit_read_only = praw.Reddit(client_id='JkwBK3M4E5CfK11a8oKkcw',
-                                 client_secret='llrNKLscK7Wcu8Fg28uoNsw5-I2LMw',
-                                 user_agent='psssat')
+client_id = ''
+client_secret = ''
+user_agent = ''
+
+reddit_read_only = praw.Reddit(client_id=client_id,
+                                 client_secret=client_secret,
+                                 user_agent=user)
 
 subreddit = reddit_read_only.subreddit('climbing')
 

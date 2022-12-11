@@ -164,7 +164,7 @@ for i in range(len(filt_data_bp)):
     plt.plot(time, filt_data_bp[i])
     plt.title(f'BP for freq: {worthy_peaks[i][3]}')
 plt.show()
-'''
+
 #-Plots-of-combined-freqs-and-implied-noise
 plt.subplot(121)
 plt.plot(time, open_price, label='gme open')
@@ -175,6 +175,6 @@ plt.plot(time, comb_noise, label='combined implied noise')
 plt.plot(time, combined_freqs, label='combined worth freqs')
 plt.legend(loc='upper right')
 plt.show()
-'''
+
 #--------------------------------------------------
 

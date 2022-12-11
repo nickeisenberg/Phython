@@ -3,9 +3,9 @@ from stats import *
 from reddit import *
 import yfinance as yf
 
-client_id = 'JkwBK3M4E5CfK11a8oKkcw'
-client_secret = 'llrNKLscK7Wcu8Fg28uoNsw5-I2LMw'
-user_agent = 'psssat'
+client_id = 'NA7yHLvDpSwcAEA1nmibNQ'
+client_secret = 'qq_Odz0Vq6vIOPziOz2JYnoUJkMPog'
+user_agent = 'phython_act'
 
 # open up the subreddit
 wsb = praw.Reddit(client_id=client_id,
