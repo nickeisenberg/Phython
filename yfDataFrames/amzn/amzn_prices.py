@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 path = '/Users/nickeisenberg/GitRepos/Phython/yfDataFrames/amzn/'
-name = 'december_1m'
+name = 'dec2022_1m'
 
 dfs = []
 
@@ -26,7 +26,9 @@ for i in range(4):
 
 df = pd.concat(dfs)
 
-df.to_csv(f'{path}{name}.csv')
+# commenting to avoid accidental overwrite
+# df.to_csv(f'{path}{name}.csv')
+
 #--------------------------------------------------
 
 # for the last week of december
@@ -47,7 +49,9 @@ amzn = yf.download('AMZN',
 
 df_total = pd.concat([df, amzn])
 
-df_total.to_csv(f'{path}{name}.csv')
+# commenting this to avoid accidental overwrite
+# df_total.to_csv(f'{path}{name}.csv')
+
 #--------------------------------------------------
 
 # load the csv
@@ -73,7 +77,7 @@ _ = fig.update_yaxes(title={'text':'price'},
                      secondary_y=False)
 _ = fig.update_yaxes(title={'text':'volume'},
                      secondary_y=True)
-fig.update_layout(
+_ = fig.update_layout(
         title={'text': 'AMZN December',
                'x': .5}
         )
