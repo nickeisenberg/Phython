@@ -1,3 +1,4 @@
+import re
 import numpy as np
 import polygon as pg
 from datetime import date, datetime, timedelta
@@ -20,6 +21,18 @@ def call_price(ticker, strike, expire, days_to_expire):
             expire - timedelta(days=days_to_expire)
             )
     return call_dic
+#--------------------------------------------------
+
+# parse through the stock prices
+# specify the period
+def  time_parser(time, delims='-|:|\s'):
+    return re.split(delims, time)
+
+
+    
+
+
+
 #--------------------------------------------------
 
 # formulize the black-scholes framework
