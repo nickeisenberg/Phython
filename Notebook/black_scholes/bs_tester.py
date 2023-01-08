@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from datetime import date, timedelta, datetime
 from black_scholes_funcs import *
 from copy import deepcopy
+from scipy.stats import pearsonr
 
 
 path = '/Users/nickeisenberg/GitRepos/Phython/yfDataFrames/amzn/'
@@ -82,14 +83,24 @@ amzn221223_C83_0 = call_price('AMZN',
 
 prev_week = deepcopy(weeks['week2'])
 prev_week_log = deepcopy(weeks_log['week2']['Open'].values) 
-prev_week_log_returns = np.diff(prev_week_log) / prev_week_log[:-1] 
+prev_week_log_returns = np.diff(prev_week_log) 
 
 week_of_expire = deepcopy(weeks['week3'])
-week_of_expire_price = week_of_expire['Open'].values
 
+print(week_of_expire.head())
+print(week_of_expire.tail())
+
+print(week_of_expire.shape)
+
+# PM = premarket, AH = after hours
+# 1 time interval is from moday PM through friday AH
+t_interval_in_min = 16 * 5 * 60
 partition = np.linspace(0, 1, week_of_expire.shape[0])
-delta = partition[1] - partition[0]
+delta = 1 / t_interval_in_min
 
+# Under the geometric brownian motion assumption, the log returns are normally
+# distributed with mean mu_sample = (mu - sigma ** 2 / 2) * delta and variance
+# sigma_sample = sigma * sqrt(delta)
 mu_sample = prev_week_log_returns.mean()
 sigma_sample = prev_week_log_returns.std()
 mu = mu_sample / delta + .5 * sigma_sample ** 2
@@ -99,11 +110,8 @@ print(mu)
 print(sigma)
 
 S_0 = weeks['week3']['Open'].loc['2022-12-19 09:30:00']
-
-rate = .00441 / 52 / 7 / 24 * 75.5  # 3 month t-bill rate in mon_open -> fri_close
-print(rate)
-
-t_to_exp = 1  # 1 trading week until expire
+rate = .00441 / 52 / 7 / 24 * t_interval_in_min
+t_to_exp = (7.5 + 4 + 16 * 3 + 4.5 + 7.5) * 60 / t_interval_in_min
 K = 83
 fair_price = f(S_0, t_to_exp, K, sigma, rate)
 
@@ -112,12 +120,29 @@ print(amzn221230_C83_4)
 
 S_0_pm = weeks['week3']['Open'].loc['2022-12-19 04:00:00']
 sims = []
-for i in range(10):
-    sims.append(geo_b_motion(partition, S_0_pm, mu, sigma))
+for i in range(100):
+    sims.append(geo_b_motion(partition, delta, S_0_pm, mu, sigma))
 
 for sim in sims:
     plt.plot(sim)
-plt.plot(week_of_expire_price)
+plt.plot(week_of_expire['Open'].values)
+plt.show()
+
+sim_corrs = []
+for sim in sims:
+    sim_corrs.append([pearsonr(sim, week_of_expire['Open'].values)[0], sim])
+
+sim_corr_df = pd.DataFrame(
+        data=[sim[1] for sim in sim_corrs],
+        index=[sim[0] for sim in sim_corrs]
+        )
+
+sim_corr_df.sort_index(ascending=False, inplace=True)
+
+print(sim_corr_df.index.values[:5])
+
+plt.plot(week_of_expire['Open'].values)
+plt.plot(sim_corr_df.iloc[0].values)
 plt.show()
 
 fig = make_subplots()

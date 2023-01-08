@@ -71,8 +71,7 @@ def b_motion(T):
     return B
 
 # dS = mu St dt + sigma St dBt
-def geo_b_motion(T, S0, mu, sigma):
-    delta = T[1] - T[0]
+def geo_b_motion(T, delta, S0, mu, sigma):
     dB = np.sqrt(delta) * np.random.normal(0, 1, T.shape[0] - 1)
     B = np.cumsum(dB)
     B = np.hstack((0, B))
