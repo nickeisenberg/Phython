@@ -4,6 +4,5 @@
 
 A slow moving long term project for fun and practice.
 
-The Notebook is essentially a 'notebook' and has random python scripts and plots relating to the project.
-
+Finance + Python = Phython
 
