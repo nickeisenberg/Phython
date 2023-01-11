@@ -2,7 +2,8 @@
   <img src="https://github.com/nickeisenberg/Phython/blob/master/logo.png" />
 </p>
 
+<center>
 A slow moving long term project for fun and practice.
 
 Finance + Python = Phython
-
+</center>
