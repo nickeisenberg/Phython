@@ -161,7 +161,7 @@ for sim in sims:
 _ = fig.update_yaxes(title={'text': 'Price'})
 _ = fig.update_layout(
         title={
-    'text': "A lucky simultation of AMZN from 12-19-22 to 12-23-22",
+    'text': "A simultation of AMZN from 12-19-22 to 12-23-22",
     'x': .5
     },
         )
