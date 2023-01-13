@@ -114,6 +114,6 @@ for week, sim in week_sims.items():
                                      showlegend=False),
                       row=plts[week - 1][0], col=plts[week - 1][1])
 _ = fig.update_layout(
-        title={'text': 'simulations of AMZN for the last 4 weeks of December',
+        title={'text': 'geometric brownian motion simulations of AMZN for the last 4 weeks of December',
                'x': .5})
 fig.show()
