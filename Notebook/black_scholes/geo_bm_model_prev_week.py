@@ -1,3 +1,6 @@
+# modeling amzn with a geometric brownian motion.
+# the mean and variance of the simulation will be derived using the previous week.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
