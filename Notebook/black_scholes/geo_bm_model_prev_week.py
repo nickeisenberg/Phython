@@ -117,5 +117,3 @@ _ = fig.update_layout(
         title={'text': 'simulations of AMZN for the last 4 weeks of December',
                'x': .5})
 fig.show()
-
-
