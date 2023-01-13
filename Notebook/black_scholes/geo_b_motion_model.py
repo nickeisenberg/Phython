@@ -2,11 +2,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from black_scholes_funcs import *
 import datetime as dt
 from scipy.stats import pearsonr, norm
 from copy import deepcopy
 import yfinance as yf
+from sklearn.preprocessing import MinMaxScaler
 
 path = '/Users/nickeisenberg/GitRepos/Phython/yfDataFrames/amzn/'
 
@@ -17,106 +19,14 @@ dates_dt = [dt.datetime.strptime(s, '%Y-%m-%d %H:%M:%S') for s in dates_str]
 last_week_bool = dates_str > '2022-12-25'
 
 amzn_beg = amzn.loc[~last_week_bool]
-dates_str = amzn_beg.index.values    
-dates_dt = [dt.datetime.strptime(s, '%Y-%m-%d %H:%M:%S') for s in dates_str]
+dates_str_beg = amzn_beg.index.values    
+dates_dt_beg = [dt.datetime.strptime(s, '%Y-%m-%d %H:%M:%S') for s in
+                dates_str_beg]
 
 amzn_end = amzn.loc[last_week_bool]
 dates_str_end = amzn_end.index.values    
 dates_dt_end = [dt.datetime.strptime(s, '%Y-%m-%d %H:%M:%S')
                 for s in dates_str_end]
-
-# group inds by days of the week
-day_inds = {}
-for i in np.arange(0, 5):
-    day_inds[i] = []
-
-for ddt, dstr in zip(dates_dt, dates_str):
-    day_inds[ddt.weekday()].append(dstr)
-
-day_df = {}  # dictionary of dfs of prices based on days of the week
-for d, ind in day_inds.items():
-    day_df[d] = amzn_beg.loc[ind]
-
-day_stats = {}
-for day, df in day_df.items():
-    day_stats[day] = [np.diff(np.log(df['Open'].values)).mean(),
-                      np.diff(np.log(df['Open'].values)).std()]
-
-day_inds_end = {}
-for i in np.arange(0, 5):
-    day_inds_end[i] = []
-
-for ddt, dstr in zip(dates_dt_end, dates_str_end):
-    day_inds_end[ddt.weekday()].append(dstr)
-
-day_df_end = {}  # dictionary of dfs of prices based on days of the week
-for d, ind in day_inds_end.items():
-    day_df_end[d] = amzn_end.loc[ind]
-
-day_stats_end = {}
-for day, df in day_df_end.items():
-    if day == 0:
-        continue
-    day_stats_end[day] = [np.diff(np.log(df['Open'].values)).mean(),
-                          np.diff(np.log(df['Open'].values)).std()]
-
-for k, v in day_stats.items():
-    print(k)
-    print(v)
-    print('')
-
-for k, v in day_stats_end.items():
-    print(k)
-    print(v)
-    print('')
-
-day_indicator = np.array([d.weekday() for d in dates_dt])
-day_open = {}
-for day in day_df.keys():
-    day_bool = (day_indicator == day).astype(int)
-    sep = np.diff(day_bool)
-    inds = np.where(sep == -1)[0] + 1
-    series_list = []
-    for ind in inds:
-        dt_end = dates_dt[ind]
-        dt_beg = dt_end - dt.timedelta(hours=24)
-        str_beg = dt_beg.strftime('%Y-%m-%d %H:%M:%S')
-        try:
-            beg_ind = np.where(dates_str == str_beg)[0][0]
-            print(beg_ind)
-        except:
-            print(f'prob with day {day}')
-         
-bol = (day_indicator == 0).astype(int)
-boll = np.diff(bol)
-endlocs = np.where(boll == -1)[0] + 1
-for loc in endlocs:
-    dtt = dates_dt[loc] - dt.timedelta(hours=24)
-    dtt = dtt.strftime('%Y-%m-%d %H:%M:%S')
-    try:
-        ind = np.where(dates_str == dtt)[0][0]
-        print(ind)
-        print(dates_str[ind])
-        print(day_indicator[ind])
-        print('')
-    except:
-       print('no monday this week') 
-        
-
-
-
-
-day_df_noralized = {}
-for day, df in day_df.items():
-    series_list = []
-    for col in df.columns:
-        vec = deepcopy(df[col])
-        mu, std = vec.mean(), vec.std()
-        vec -= mu
-        vec /= std
-        series_list.append(vec)
-    day_df_noralized[day] = pd.DataFrame(series_list).T
-
 #--------------------------------------------------
 
 # group the inds by weeks
@@ -132,32 +42,80 @@ count = 0
 for ind1, ind0 in zip(week_start_inds[1:], week_start_inds[:-1]):
     week_inds[count] = np.arange(ind0, ind1)
     count += 1
-week_inds[no_of_weeks] = np.arange(week_start_inds[-1], dates_str.shape[0])
+week_inds[no_of_weeks - 1] = np.arange(week_start_inds[-1], dates_str.shape[0])
 
 week_df = {}  # dictionary of dfs of price based on week
 for k, ind in week_inds.items():
-    week_df[k] = amzn_beg.iloc[ind]
+    week_df[k] = amzn.iloc[ind]
 
 week_df_normalized = {}
 for week, df in week_df.items():
     series_list = []
     for col in df.columns:
         vec = deepcopy(df[col])
-        mu, std = vec.mean(), vec.std()
-        vec -= mu
-        vec /= std
+        max, min = vec.max(), vec.min()
+        vec -= min
+        vec /= max 
         series_list.append(vec)
     week_df_normalized[week] = pd.DataFrame(series_list).T
 
+
 fig, ax = plt.subplots(1, 2)
-ax[0].plot(week_df[0]['Open'].values)
-ax[1].plot(week_df_normalized[0]['Open'].values)
+ax[0].plot(week_df[4]['Open'].values)
+ax[1].plot(week_df_normalized[4]['Open'].values)
 plt.show()
+
+week_mu = {}
+week_std = {}
+for week, df in week_df.items():
+    df = deepcopy(df.drop(labels='Volume', axis=1))
+    log_ret = deepcopy(np.diff(np.log(df), axis=0))
+    log_ret = pd.DataFrame(data=log_ret, columns=df.columns)
+    week_mu[week] = log_ret.mean(axis=0)
+    week_std[week] = log_ret.std(axis=0)
 #--------------------------------------------------
 
+# simulate the price based on previous week action
+t_format = '%Y-%m-%d %H:%M:%S'
+week_sims = {}
+for week, df in week_df.items():
+    if week == 0:
+        continue
+    week_sims[week] = []
+    start = dt.datetime.strptime(df.index.values[0], t_format)
+    end = dt.datetime.strptime(df.index.values[-1], t_format)
+    t_delt = end - start
+    mins = (t_delt.days + 1) * 16 * 60
+    time = np.linspace(0, mins - 1, mins)
+    delta = 1
+    for i in range(20):
+        sims = []
+        for col in df.columns:
+            if col == 'Volume':
+                continue
+            S0 = df[col].values[0]
+            mu, std = week_mu[week - 1][col], week_std[week - 1][col]
+            sims.append(geo_b_motion(time, delta, S0, mu, std))
+        week_sims[week].append(pd.DataFrame(
+            data=np.array(sims).T, columns=df.columns[:-1]))
 
-opens = amzn_beg['Open'].values
-log_opens = np.log(opens)
-log_returns = np.diff(log_opens)
+titles = [f'week {i}' for i in range(1, 5)]
+plts = [[1, 1], [1, 2], [2, 1], [2, 2]]
+fig = make_subplots(rows=2, cols=2,
+                    subplot_titles=titles)
+for week, sim in week_sims.items():
+    _ = fig.add_trace(go.Scatter(y=week_df[week]['Open'].values,
+                                 name=f'amzn {week}',
+                                 line={'width': 4,
+                                       'color': 'black'}),
+                      row=plts[week - 1][0], col=plts[week - 1][1])
+    for sim in week_sims[week]:
+        _ = fig.add_trace(go.Scatter(y=sim['Open'].values,
+                                     showlegend=False),
+                      row=plts[week - 1][0], col=plts[week - 1][1])
+_ = fig.update_layout(
+        title={'text': 'simulations of AMZN for the last 4 weeks of December',
+               'x': .5})
+fig.show()
 
 
