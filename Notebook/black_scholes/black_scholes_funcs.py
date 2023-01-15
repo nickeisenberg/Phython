@@ -1,12 +1,11 @@
 import re
 import numpy as np
 import polygon as pg
-from datetime import date, datetime, timedelta
+from datetime import timedelta
 from scipy.stats import norm
-import tensorflow as tf
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from sys import exit
+from tensorflow import GradientTape
+from keras.utils import timeseries_dataset_from_array
+from keras.backend import get_value
 
 # use polygon to get the option price
 def call_price(ticker, strike, expire, days_to_expire):
@@ -28,12 +27,21 @@ def call_price(ticker, strike, expire, days_to_expire):
 def  time_parser(time, delims='-|:|\s'):
     return re.split(delims, time)
 
-
-    
-
-
-
 #--------------------------------------------------
+
+# trailing volatility calulator
+def trailing_volatility(time_series, period_length, step_size=1):
+    periods = timeseries_dataset_from_array(
+            data=time_series,
+            targets=None,
+            sequence_length=period_length,
+            sequence_stride=step_size,
+            batch_size=None)
+    period_volatilites = []
+    for p in periods:
+        period_volatilites.append(np.array(p).std())
+    period_volatilites = np.array(period_volatilites)
+    return period_volatilites
 
 # formulize the black-scholes framework
 # S = stock price
@@ -49,10 +57,10 @@ def f(S, T, K, s, r):
     return (S * norm.cdf(g)) - (K * np.exp(-r * T) * norm.cdf(h))
 
 def f_x(S, T, K, s, r):
-    with tf.GradientTape() as g:
+    with GradientTape() as g:
         g.watch(S)
         y = f(S, T, K, s, r)
-    return tf.keras.backend.get_value(g.gradient(y, S))
+    return get_value(g.gradient(y, S))
 
 def self_financing(t, B, S, T, K, s, r):
     a_t = f_x(S, T - t, K, s, r)
