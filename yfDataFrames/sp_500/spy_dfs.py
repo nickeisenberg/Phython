@@ -13,7 +13,7 @@ sp_500 = ['SPY']
 #--------------------------------------------------
 
 # Get the info and interpolate the missing minute data
-start = datetime(2022, 12, 19, 4 - 3, 0, 0)
+start = datetime(2023, 1, 16, 4 - 3, 0, 0)
 end = start + timedelta(days=5, hours=16)
 
 data = []
@@ -28,6 +28,8 @@ for i in range(4):
                 interval='1m',
                 prepost=True)
             )
+
+data[0].columns
 #--------------------------------------------------
 
 # Split up the multiindex so that the the dataframes can be easily stored
@@ -47,9 +49,13 @@ bad_inds = {}
 for tick in sp_500:
     bad_inds[tick] = []
 
+sp_500_dfs_pre['Open'].head()
+sp_500_dfs_pre['Open'].tail()
+
 nan_in_a_row = {}
 for tick in sp_500:
-    xxx = sp_500_dfs_pre['Open'][tick].values
+    # xxx = sp_500_dfs_pre['Open'][tick].values
+    xxx = sp_500_dfs_pre['Open'].values
     index = np.linspace(0, xxx.shape[0] - 1, xxx.shape[0])
     isnan = index[np.isnan(xxx)]
     isnan_diff = np.diff(isnan)
@@ -75,6 +81,15 @@ for k, v in nan_in_a_row.items():
 # interpolate the prices
 sp_500_dfs = deepcopy(sp_500_dfs_pre)
 
+fig = go.Figure()
+_ = fig.add_trace(
+        go.Scatter(
+            # x=sp_500_dfs['Open'].index.values,
+            y=sp_500_dfs['Open'].values,
+            )
+        )
+fig.show()
+
 # for k, v in sp_500_dfs.items():  # SPY had no missing values
 #     sp_500_dfs[k] = v.interpolate(axis=0)
 #--------------------------------------------------
@@ -82,12 +97,15 @@ sp_500_dfs = deepcopy(sp_500_dfs_pre)
 # Filter out the spikes that appear. Not sure what caused the spikes.
 # Probably an after hours or premarket market order. 
 sp_500_filt_dfs = deepcopy(sp_500_dfs)
+
 for type_ in types:
-    for col in sp_500_dfs[type_].columns:
-        sp_500_filt_dfs[type_][col] = median_filter(
-                input=sp_500_filt_dfs[type_][col],
-                size=3,
-                mode='nearest')
+    sp_500_filt_dfs[type_] = pd.Series(
+           data=median_filter(
+               input=sp_500_filt_dfs[type_],
+               size=3,
+               mode='nearest'),
+           index=sp_500_dfs['Open'].index,
+           name=type_)
 #--------------------------------------------------
 
 # plot and view
@@ -95,26 +113,12 @@ fig = go.Figure()
 for tick in sp_500:
     _ = fig.add_trace(
             go.Scatter(# x=sp_500_scaled_dfs[tick].index,
-                       y=sp_500_filt_dfs['Open'][tick].values,
+                       y=sp_500_filt_dfs['Open'].values,
                        name=f'{tick}')
             )
     _ = fig.add_trace(
             go.Scatter(# x=sp_500_scaled_dfs[tick].index,
-                       y=sp_500_dfs['Open'][tick].values,
-                       name=f'{tick}')
-            )
-fig.show()
-
-sp_500_scaled_dfs = deepcopy(sp_500_filt_dfs['Open'])
-Mm = MinMaxScaler()
-sp_500_scaled_dfs[sp_500_scaled_dfs.columns] = Mm.fit_transform(
-        sp_500_scaled_dfs[sp_500_scaled_dfs.columns])
-
-fig = go.Figure()
-for tick in sp_500:
-    _ = fig.add_trace(
-            go.Scatter(# x=sp_500_scaled_dfs[tick].index,
-                       y=sp_500_scaled_dfs[tick].values,
+                       y=sp_500_dfs['Open'].values,
                        name=f'{tick}')
             )
 fig.show()
@@ -125,27 +129,30 @@ fig.show()
 path = '/Users/nickeisenberg/GitRepos/Phython/yfDataFrames/sp_500/'
 
 for type_ in types:
-    sp_500_dfs[type_].to_csv(f'{path}/unfiltered/sp_500_{type_}.csv')
+    sp_500_dfs[type_].to_csv(f'{path}/unfiltered/sp_500_{type_}_jan.csv')
 
 for type_ in types:
-    sp_500_filt_dfs[type_].to_csv(f'{path}/filtered/sp_500_{type_}.csv')
+    sp_500_filt_dfs[type_].to_csv(f'{path}/filtered/sp_500_{type_}_jan.csv')
 #--------------------------------------------------
 
 # read the csv files, scale and plot them
 reload = {}
 for type_ in types:
     reload[type_] = pd.read_csv(
-            f'{path}/filtered/sp_500_{type_}.csv', index_col=0
+            f'{path}/filtered/sp_500_{type_}_jan.csv', index_col=0
             )
 
+reload['Open'].tail()
+
 scaled = deepcopy(reload['Open'])
+
 Mm = MinMaxScaler()
-scaled[scaled.columns] = Mm.fit_transform(scaled[scaled.columns])
+scaled['Open'] = Mm.fit_transform(scaled['Open'].values.reshape((-1, 1)))
 
 fig = go.Figure()
 for tick in sp_500:
     _ = fig.add_trace(
-            go.Scatter(y=scaled[tick].values, name=f'{tick}')
+            go.Scatter(y=scaled['Open'].values, name=f'{tick}')
             )
 fig.show()
 

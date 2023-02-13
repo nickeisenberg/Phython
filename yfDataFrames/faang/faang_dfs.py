@@ -13,7 +13,7 @@ faang = ['AMZN', 'META', 'GOOG', 'NFLX', 'AAPL']
 #--------------------------------------------------
 
 # Get the info and interpolate the missing minute data
-start = datetime(2022, 12, 19, 4 - 3, 0, 0)
+start = datetime(2023, 1, 16, 4 - 3, 0, 0)
 end = start + timedelta(days=5, hours=16)
 
 data = []
@@ -40,6 +40,9 @@ for type_ in types:
         faang_dfs_pre[type_].append(d[type_])
 for type_ in types:
     faang_dfs_pre[type_] = pd.concat(faang_dfs_pre[type_])
+
+faang_dfs_pre['Open'].head()
+faang_dfs_pre['Open'].tail()
 #--------------------------------------------------
 
 # Figure out the max number of missing prices in a row
@@ -112,18 +115,20 @@ fig.show()
 path = '/Users/nickeisenberg/GitRepos/Phython/yfDataFrames/faang/'
 
 for type_ in types:
-    faang_dfs[type_].to_csv(f'{path}/unfiltered/faang_{type_}.csv')
+    faang_dfs[type_].to_csv(f'{path}/unfiltered/faang_{type_}_jan.csv')
 
 for type_ in types:
-    faang_filt_dfs[type_].to_csv(f'{path}/filtered/faang_{type_}.csv')
+    faang_filt_dfs[type_].to_csv(f'{path}/filtered/faang_{type_}_jan.csv')
 #--------------------------------------------------
 
 # read the csv files, scale and plot them
 reload = {}
 for type_ in types:
     reload[type_] = pd.read_csv(
-            f'{path}/filtered/faang_{type_}.csv', index_col=0
+            f'{path}/filtered/faang_{type_}_jan.csv', index_col=0
             )
+
+reload['Open'].index
 
 scaled = deepcopy(reload['Open'])
 Mm = MinMaxScaler()
