@@ -12,14 +12,18 @@ from sklearn.preprocessing import MinMaxScaler
 sp_500 = ['SPY']
 #--------------------------------------------------
 
-# Get the info and interpolate the missing minute data
-start = datetime(2023, 1, 16, 4 - 3, 0, 0)
-end = start + timedelta(days=5, hours=16)
+start = datetime(2023, 2, 3, 4 - 3, 0, 0)
+end = datetime(2023, 3, 1, 4 - 3, 0, 0)
+
+no_weeks = np.arange(1, (end - start).days + 1, 1)[::7].size
 
 data = []
-for i in range(4):
-    start_ = start + timedelta(days=7 * i)
-    end_ = end + timedelta(days=7 * i)
+for i in np.arange(0, no_weeks, 1):
+    start_ = start + timedelta(days=7 * int(i))
+    if i == np.arange(0, no_weeks, 1)[-1]:
+        end_ = end
+    else:
+        end_ = start + timedelta(days=7 * (int(i) + 1))
     data.append(
             yf.download(
                 tickers=sp_500,
@@ -29,19 +33,20 @@ for i in range(4):
                 prepost=True)
             )
 
-data[0].columns
+# Get the info and interpolate the missing minute data
 #--------------------------------------------------
 
 # Split up the multiindex so that the the dataframes can be easily stored
 types = ['Open', 'High', 'Low', 'Close', 'Volume']
-sp_500_dfs_pre = {}
-for type_ in types:
-    sp_500_dfs_pre[type_] = []
+sp_500_dfs_pre = {type_: [] for type_ in types}
 for type_ in types:
     for d in data:
         sp_500_dfs_pre[type_].append(d[type_])
 for type_ in types:
-    sp_500_dfs_pre[type_] = pd.concat(sp_500_dfs_pre[type_])
+    df = pd.concat(sp_500_dfs_pre[type_])
+    df.rename(f'SPY_{type_}', inplace=True)
+    sp_500_dfs_pre[type_] = df
+
 #--------------------------------------------------
 
 # Figure out the max number of missing prices in a row
@@ -129,10 +134,10 @@ fig.show()
 path = '/Users/nickeisenberg/GitRepos/Phython/yfDataFrames/sp_500/'
 
 for type_ in types:
-    sp_500_dfs[type_].to_csv(f'{path}/unfiltered/sp_500_{type_}_jan.csv')
+    sp_500_dfs[type_].to_csv(f'{path}/unfilt/{type_}_2023_02.csv')
 
 for type_ in types:
-    sp_500_filt_dfs[type_].to_csv(f'{path}/filtered/sp_500_{type_}_jan.csv')
+    sp_500_filt_dfs[type_].to_csv(f'{path}/filt/{type_}_2023_02.csv')
 #--------------------------------------------------
 
 # read the csv files, scale and plot them
