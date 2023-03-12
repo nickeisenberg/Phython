@@ -1,0 +1,1 @@
+{"cmd": "for t in type1:\n    for dt in dtypes:\n        print(len(dfs1[t][dt]))", "cmd_opts": "", "import_complete": 1, "terminal": "nvimterm"}

@@ -19,8 +19,12 @@ for dir in dirs:
 
 for dir in dirs:
     for t in types:
-        dfs[dir][t] = pd.concat(dfs[dir][t])
+        dfs[dir][t] = pd.concat(dfs[dir][t]).sort_index()
 
+for dir in dirs:
+    for t in types:
+        print(dfs[dir][t].head())
+        print(dfs[dir][t].tail())
 
 for dir in dirs:
     for t in types:
