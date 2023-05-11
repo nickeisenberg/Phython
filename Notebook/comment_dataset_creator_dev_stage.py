@@ -84,30 +84,3 @@ for sub in subs_coms_reps.keys():
             rep_count += 1
         com_count += 1
 
-# historical stock data
-# create a meme index
-# need to min/max scale each meme
-memes = ['GME']
-memes_history = []
-for meme in memes:
-    meme_df = yf.Ticker('GME').history(
-            period='1y', interval='1d',)
-    memes_history.append((meme, meme_df))
-memes_history = dict(memes_history)
-
-memes_open = []
-memes_close = []
-for meme in memes_history.keys():
-    memes_open.append(memes_history[meme]['Open'])
-    memes_close.append(memes_history[meme]['Close'])
-memes_open = sum(memes_open) / len(memes_open)
-memes_close = sum(memes_close) / len(memes_close)
-
-memes_pchange_o2c = (memes_close - memes_open) / memes_open
-
-data = ((memes_close[1:].values - memes_close[: -1].values) /
-        memes_close[: -1].values)
-index = memes_close[1:].index
-memes_pchange_c2c = pd.Series(
-        data=data,
-        index=index)

@@ -2,9 +2,9 @@ import praw
 from datetime import datetime
 from sys import exit 
 
-client_id = ''
-client_secret = ''
-user_agent = ''
+client_id = 'JkwBK3M4E5CfK11a8oKkcw'
+client_secret = 'llrNKLscK7Wcu8Fg28uoNsw5-I2LMw'
+user_agent = 'psssat'
 
 reddit_read_only = praw.Reddit(client_id=client_id,
                                client_secret=client_secret,
@@ -13,7 +13,7 @@ reddit_read_only = praw.Reddit(client_id=client_id,
 subreddit = reddit_read_only.subreddit('wallstreetbets')
 print(subreddit.display_name)
 print(type(subreddit))
-print('--------------------------------------------------')
+
 # get the first 5 submissions
 submissions = subreddit.search('Discussion')
 
@@ -26,7 +26,7 @@ for submission in submissions:
     count += 1
 
 # get the first 5 top comments of the first submission
-top_comments = sub_dic[f'sub_1'].comments
+top_comments = sub_dic['sub_1'].comments
 
 tc_dic = {}
 count = 1
@@ -45,13 +45,11 @@ for name, tc in tc_dic.items():
     print(f'progress replies: {count} / {total}')
     replies_tc = tc.replies
     replies_tc.replace_more(limit=None)
-
     tc_no = name.split('_')[-1]
     reply_dic[f'tc_{tc_no}_replies'] = []
     for reply in replies_tc:
         reply_dic[f'tc_{tc_no}_replies'].append(reply.body)
     count += 1
-
 
 for i in range(1, 6):
     tc = tc_dic[f'tc_{i}']

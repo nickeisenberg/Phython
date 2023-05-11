@@ -2,6 +2,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
 
 path = '/Users/nickeisenberg/GitRepos/Phython/yfDataFrames/faang/'
 dirs = ['filt', 'unfilt']
