@@ -14,10 +14,12 @@ faang = ['AMZN', 'META', 'GOOG', 'NFLX', 'AAPL']
 
 # Get the info and interpolate the missing minute data
 # need to acount for the three hour offset from lv to ny
+# also batch the days into 7 day groups. This is because
+# yfinance works better this way.
 start = datetime(2023, 5, 1, 4 - 3, 0, 0)
-end = datetime(2023, 5, 6, 4 - 3, 0, 0)
+end = datetime(2023, 5, 11, 4 - 3, 0, 0)
 
-no_weeks = np.arange(1, (end - start).days + 1, 1)[::7].size
+no_weeks = int(np.ceil(((end - start).days + 1) / 7))
 
 data = []
 for i in np.arange(0, no_weeks, 1):
@@ -47,8 +49,9 @@ for type_ in types:
     df.rename({fn: f'{fn}_{type_}' for fn in faang}, axis=1, inplace=True)
     faang_dfs_pre[type_] = df
 
-faang_dfs_pre['Close'].head()
-faang_dfs_pre['Close'].tail()
+# Check to see if things look right
+# faang_dfs_pre['Close'].head()
+# faang_dfs_pre['Close'].tail()
 #--------------------------------------------------
 
 # Figure out the max number of missing prices in a row
@@ -80,36 +83,6 @@ for k, v in nan_in_a_row.items():
     print(k)
     print(v)
     print('')
-
-
-# bad_inds = {}
-# for tick in faang:
-#     bad_inds[tick] = []
-#     
-# nan_in_a_row = {}
-# for tick in faang:
-#     # xxx = faang_dfs_pre['Open'][f'{tick}_Open'].values
-#     xxx = arr
-#     index = np.linspace(0, xxx.shape[0] - 1, xxx.shape[0])
-#     isnan = index[np.isnan(xxx)]
-#     isnan_diff = np.diff(isnan)
-#     count = 0
-#     thresh = 14
-#     for i in range(isnan.shape[0] - thresh):
-#         ind = isnan[i]
-#         next = isnan[i: i + thresh]
-#         bol = []
-#         for j in range(thresh):
-#             bol.append(ind + j == next[j])
-#         if np.array(bol).sum() == thresh:
-#             count += 1
-#             bad_inds[tick].append(ind)
-#     nan_in_a_row[tick] = count
-# for k, v in nan_in_a_row.items():
-#     print(k)
-#     print(v)
-#     print('')
-
 #--------------------------------------------------
 
 # interpolate the prices
