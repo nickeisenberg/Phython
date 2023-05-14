@@ -24,13 +24,15 @@ class ticker_history:
                 end_ = end
            else:
                 end_ = start + timedelta(days=6 * (int(i) + 1))
-           data.append(
-                yf.download(tickers=self.tickers,
-                            start=start_,
-                            end=end_,
-                            interval='1m',
-                            prepost=True)
+           tick_df = yf.download(
+                tickers=self.tickers,
+                start=start_,
+                end=end_,
+                interval='1m',
+                prepost=True
             )
+           tick_df.index = tick_df.index.astype('int64') // 10**9
+           data.append(tick_df)
 
         types = ['Open', 'High', 'Low', 'Close', 'Volume']
         ticker_series_pre = {
@@ -69,20 +71,18 @@ class ticker_history:
 
 #--------------------------------------------------
 
-start = datetime(2023, 5, 1, 4 - 3, 0, 0)
-end = datetime(2023, 5, 6, 4 - 3, 0, 0)
-
-faang = ['AMZN', 'META', 'GOOG', 'NFLX', 'AAPL']
-
-
-
-history = ticker_history(['AMZN']).ohlcv(start, end)
-
-df = history[0]['AMZN']['Open']
-
-df
-
-df.index.astype('int64') // 10**9
+# start = datetime(2023, 5, 1, 4 - 3, 0, 0)
+# end = datetime(2023, 5, 6, 4 - 3, 0, 0)
+# 
+# faang = ['AMZN', 'META', 'GOOG', 'NFLX', 'AAPL']
+# 
+# history = ticker_history(['AMZN']).ohlcv(start, end)
+# 
+# df = history[1]['AMZN']['Open']
+# 
+# df
+# 
+# df.index.astype('int64') // 10**9
 
 
 
