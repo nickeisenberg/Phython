@@ -81,8 +81,11 @@ class ticker_history:
 # df = history[1]['AMZN']['Open']
 # 
 # df
-# 
+
 # df.index.astype('int64') // 10**9
+
+
+
 
 
 
