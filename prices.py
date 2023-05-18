@@ -55,7 +55,7 @@ class ticker_history:
         for tick in self.tickers:
             for k, v in ticker_series[tick].items():
                 ticker_series[tick][k] = v.interpolate(axis=0)
-       
+
         ticker_filt_series = deepcopy(ticker_series)
         for tick in self.tickers:
             for type_ in types:
